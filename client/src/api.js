@@ -1,7 +1,20 @@
 const normalizeBase = (base) => base.replace(/\/$/, '');
 
+const inferDefaultBase = () => {
+  let fallback = 'http://localhost:5000/api';
+  if (typeof window !== 'undefined') {
+    const { origin, port } = window.location;
+    if (port && (port === '5173' || port === '3000')) {
+      fallback = 'http://localhost:5000/api';
+    } else {
+      fallback = `${origin}/api`;
+    }
+  }
+  return fallback;
+};
+
 const API_BASE = normalizeBase(
-  import.meta.env.VITE_API_BASE || 'http://localhost:5000/api'
+  import.meta.env.VITE_API_BASE || inferDefaultBase()
 );
 
 async function request(path, { method = 'GET', body, secretKey } = {}) {
