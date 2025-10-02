@@ -2,6 +2,10 @@
   "name": "backlog-pilot",
   "version": "1.0.0",
   "private": true,
+  "scripts": {
+    "heroku-postbuild": "npm run build --workspace client",
+    "build": "npm run build --workspace client"
+  },
   "workspaces": [
     "server",
     "client"
