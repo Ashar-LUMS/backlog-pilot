@@ -79,6 +79,31 @@ Visit `http://localhost:5173` and enter a project secret to open a board, or cre
 
 Both gates are green as of the latest commit.
 
+## ☁️ Deploying to Heroku
+
+1. **Create an app**
+  ```powershell
+  heroku login
+  heroku create backlog-pilot-api
+  ```
+2. **Push the code**
+  ```powershell
+  git push heroku main
+  ```
+3. **Set environment variables** (optional)
+  ```powershell
+  heroku config:set BACKLOG_DB_FILE=/app/storage/database.json
+  heroku config:set NODE_ENV=production
+  ```
+  Ensure `/app/storage` exists by running `heroku run mkdir -p /app/storage` after the first deploy.
+  For long-term persistence, back up this file periodically to an external store (S3, Cloudinary, etc.).
+4. **Open the app**
+  ```powershell
+  heroku open
+  ```
+
+The Procfile (`web: npm start --prefix server`) runs the Express API which serves the built React client from `client/dist`. Deployments automatically build the frontend via the `heroku-postbuild` script.
+
 ## 🔌 API Overview
 
 All project-specific routes expect the `x-project-secret` header.

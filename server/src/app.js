@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
+const fs = require('fs');
 const {
   VALID_STATUSES,
   createProject,
@@ -18,6 +20,9 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+const CLIENT_BUILD_PATH = path.join(__dirname, '..', '..', 'client', 'dist');
+const hasClientBuild = fs.existsSync(CLIENT_BUILD_PATH);
 
 const sanitizeProject = (project) => {
   if (!project) return null;
@@ -151,5 +156,13 @@ app.post('/api/projects/:projectId/items/reorder', requireProjectSecret, (req, r
     res.status(400).json({ error: error.message });
   }
 });
+
+if (hasClientBuild) {
+  app.use(express.static(CLIENT_BUILD_PATH));
+
+  app.get(/^\/(?!api).*/, (req, res) => {
+    res.sendFile(path.join(CLIENT_BUILD_PATH, 'index.html'));
+  });
+}
 
 module.exports = app;
