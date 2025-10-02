@@ -329,7 +329,53 @@ button.danger {
 
 .card.dragging {
   border-color: rgba(34, 211, 238, 0.65);
-  transform: rotate(1deg);
+  box-shadow: 0 16px 28px rgba(34, 211, 238, 0.25);
+}
+
+.card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.card-header h4 {
+  margin-right: auto;
+}
+
+.card-icon-buttons {
+  display: inline-flex;
+  gap: 0.4rem;
+}
+
+.card-icon-button {
+  width: 32px;
+  height: 32px;
+  border-radius: 0.6rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: rgba(148, 197, 255, 0.12);
+  border: 1px solid rgba(148, 197, 255, 0.25);
+  color: rgba(226, 242, 255, 0.9);
+  font-size: 0.95rem;
+}
+
+.card-icon-button:hover:not(:disabled) {
+  background: rgba(56, 189, 248, 0.18);
+  border-color: rgba(56, 189, 248, 0.45);
+}
+
+.card-icon-button.danger {
+  background: rgba(248, 113, 113, 0.12);
+  border-color: rgba(248, 113, 113, 0.25);
+  color: #fecdd3;
+}
+
+.card-icon-button.danger:hover:not(:disabled) {
+  background: rgba(248, 113, 113, 0.2);
+  border-color: rgba(248, 113, 113, 0.45);
 }
 
 .card-content h4 {
@@ -350,11 +396,6 @@ button.danger {
   align-items: center;
   font-size: 0.8rem;
   color: rgba(148, 197, 255, 0.55);
-}
-
-.card-actions {
-  display: flex;
-  gap: 0.45rem;
 }
 
 .card-form textarea {

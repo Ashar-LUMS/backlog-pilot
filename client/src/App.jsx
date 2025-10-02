@@ -336,18 +336,34 @@ function BoardCard({ item, busy, onUpdate, onDelete }) {
 
   return (
     <div className="card-content">
-      <h4>{item.title}</h4>
+      <div className="card-header">
+        <h4>{item.title}</h4>
+        <div className="card-icon-buttons">
+          <button
+            type="button"
+            className="card-icon-button"
+            onClick={() => setIsEditing(true)}
+            disabled={busy}
+            aria-label="Edit backlog item"
+            title="Edit backlog item"
+          >
+            ✎
+          </button>
+          <button
+            type="button"
+            className="card-icon-button danger"
+            onClick={handleDelete}
+            disabled={busy}
+            aria-label="Delete backlog item"
+            title="Delete backlog item"
+          >
+            🗑
+          </button>
+        </div>
+      </div>
       {item.description && <p>{item.description}</p>}
       <div className="card-meta">
         <span>{new Date(item.createdAt).toLocaleDateString()}</span>
-        <div className="card-actions">
-          <button type="button" onClick={() => setIsEditing(true)} disabled={busy}>
-            Edit
-          </button>
-          <button type="button" className="danger" onClick={handleDelete} disabled={busy}>
-            Delete
-          </button>
-        </div>
       </div>
       {error && <p className="form-error">{error}</p>}
     </div>
@@ -364,6 +380,12 @@ function App() {
   const [inviteProjectId, setInviteProjectId] = useState(null);
 
   const activeColumns = useMemo(() => ensureColumns(columns), [columns]);
+
+  useEffect(() => {
+    if (!info) return undefined;
+    const timer = setTimeout(() => setInfo(''), 5000);
+    return () => clearTimeout(timer);
+  }, [info]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
