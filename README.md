@@ -120,10 +120,4 @@ All project-specific routes expect the `x-project-secret` header.
 | DELETE | `/api/projects/:projectId/items/:itemId`    | Delete a backlog item               |
 | POST   | `/api/projects/:projectId/items/reorder`    | Persist drag-and-drop ordering      |
 
-## 🧭 Next Ideas
-
-- Share links that embed the project ID, leaving only the secret to enter.
-- Add activity history on each card so you can see movement over time.
-- Optional secret key rotation with audit trail for shared teams.
-
 Happy planning! 🗂️
