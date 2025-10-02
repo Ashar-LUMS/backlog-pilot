@@ -37,7 +37,7 @@ const columnsToIds = (columns) =>
     return acc;
   }, {});
 
-function ShareLink({ projectId }) {
+function ShareLink({ projectId, variant = 'secondary' }) {
   const [copied, setCopied] = useState(false);
   const resetTimer = useRef(null);
 
@@ -75,13 +75,31 @@ function ShareLink({ projectId }) {
   return (
     <button
       type="button"
-      className="secondary"
+      className={`share-button ${variant} ${copied ? 'is-copied' : ''}`.trim()}
       onClick={handleCopy}
       disabled={!shareUrl}
       title={shareUrl}
     >
       {copied ? 'Link copied!' : 'Copy invite link'}
     </button>
+  );
+}
+
+function ProjectBadge({ name }) {
+  const initials = useMemo(() => {
+    const trimmed = (name || '').trim();
+    if (!trimmed) return 'BP';
+    const parts = trimmed.split(/\s+/).slice(0, 2);
+    const letters = parts
+      .map((part) => part.charAt(0)?.toUpperCase() || '')
+      .join('');
+    return letters || 'BP';
+  }, [name]);
+
+  return (
+    <span className="project-badge" aria-hidden="true">
+      {initials}
+    </span>
   );
 }
 
@@ -130,9 +148,9 @@ function LandingView({ onAccess, onCreate, busy, inviteProjectId, onClearInvite 
 
   return (
     <div className="landing">
-      <section className="panel">
-        <h2>Jump into a backlog</h2>
-        <p>Enter your project secret key to open its board instantly.</p>
+      <section className="panel panel-primary">
+        <h2>Return to your team space</h2>
+        <p>Drop in your shared secret to reopen the board exactly where you left it.</p>
         {inviteProjectId ? (
           <div className="invite-hint">
             <p>
@@ -164,10 +182,10 @@ function LandingView({ onAccess, onCreate, busy, inviteProjectId, onClearInvite 
       </section>
 
       <section className="panel">
-        <h2>Create a new project</h2>
+        <h2>Spin up a new project</h2>
         <p>
-          Pick a memorable secret key and share it with teammates to let them open the
-          board.
+          Name the initiative, choose a memorable secret, and start shaping the work in
+          seconds.
         </p>
         <form className="form" onSubmit={handleCreate}>
           <label htmlFor="project-name">Project name</label>
@@ -380,6 +398,16 @@ function App() {
   const [inviteProjectId, setInviteProjectId] = useState(null);
 
   const activeColumns = useMemo(() => ensureColumns(columns), [columns]);
+
+  const statusMetrics = useMemo(
+    () =>
+      COLUMN_ORDER.map((status) => ({
+        status,
+        label: COLUMN_LABELS[status],
+        count: activeColumns[status].length
+      })),
+    [activeColumns]
+  );
 
   useEffect(() => {
     if (!info) return undefined;
@@ -654,21 +682,33 @@ function App() {
   return (
     <div className="app-shell">
       <header className="app-header">
-        <div>
-          <h1>Backlog Pilot</h1>
-          <p className="tagline">A lightweight Trello-style backlog with secret switchboard access.</p>
-        </div>
-        {project ? (
-          <div className="header-actions">
-            <div className="project-meta">
-              <span className="label">Active project</span>
-              <strong>{project.name}</strong>
-            </div>
-            <button type="button" onClick={clearBoard} disabled={busy}>
-              Switch project
-            </button>
+        <div className="brand">
+          <span className="brand-mark" aria-hidden="true">
+            ⌁
+          </span>
+          <div className="brand-copy">
+            <h1>Backlog Pilot</h1>
+            <p className="tagline">Focus on the work, not the workflow.</p>
           </div>
-        ) : null}
+        </div>
+        <div className="header-actions">
+          {project ? (
+            <>
+              <div className="project-pill" role="status" aria-live="polite">
+                <ProjectBadge name={project.name} />
+                <div>
+                  <span className="label">Active board</span>
+                  <strong>{project.name}</strong>
+                </div>
+              </div>
+              <button type="button" className="ghost" onClick={clearBoard} disabled={busy}>
+                Switch project
+              </button>
+            </>
+          ) : (
+            <p className="header-note">Private boards unlock with your shared secret.</p>
+          )}
+        </div>
       </header>
 
       {(error || info) && (
@@ -690,14 +730,22 @@ function App() {
         ) : (
           <section className="board">
             <div className="board-toolbar">
-              <div>
+              <div className="board-headline">
                 <h2>{project.name}</h2>
-                <p>Your secret key is stored locally so you can hop back in anytime.</p>
+                <p>Keep delivery flowing with four focused lanes.</p>
+                <div className="board-metrics">
+                  {statusMetrics.map(({ status, label, count }) => (
+                    <div className="metric" key={status}>
+                      <span className="metric-label">{label}</span>
+                      <span className="metric-value">{count}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
               <div className="board-actions">
-                <ShareLink projectId={project.id} />
-                <button type="button" onClick={refreshBoard} disabled={busy}>
-                  Refresh board
+                <ShareLink projectId={project.id} variant="ghost" />
+                <button type="button" className="primary" onClick={refreshBoard} disabled={busy}>
+                  {busy ? 'Refreshing…' : 'Refresh board'}
                 </button>
               </div>
             </div>
