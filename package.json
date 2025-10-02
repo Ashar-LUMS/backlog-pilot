@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-  "heroku-postbuild": "npm install --workspace client --include=optional --force --production=false && npm run build --workspace client",
+  "heroku-postbuild": "node scripts/heroku-postbuild.js",
     "build": "npm run build --workspace client"
   },
   "workspaces": [
