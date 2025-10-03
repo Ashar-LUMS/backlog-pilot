@@ -788,16 +788,35 @@ button.danger {
 }
 
 /* Allow add button to fill available width when there is space */
-.column .add-item-btn {
-  align-self: stretch;
-  min-height: 44px;
+.column .add-item-btn { align-self: stretch; min-height: 44px; }
+.column.is-empty .add-item-btn { min-height: 44px; }
+
+/* Jira-like quick add at the top of the column */
+.quick-add-trigger {
+  width: 100%;
+  justify-content: flex-start;
+  color: var(--text-soft);
+}
+.quick-add-trigger:hover:not(:disabled) {
+  color: var(--text);
 }
 
-/* Tastefully fill vertical space without overwhelming the column */
-.column.is-empty .add-item-btn {
-  margin-top: auto;
-  min-height: 180px;
+.quick-add-form {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0.5rem;
 }
+
+.quick-add-form input {
+  padding: 0.5rem 0.6rem;
+}
+
+.quick-add-actions {
+  display: inline-flex;
+  gap: 0.5rem;
+}
+
+.form-error.small { font-size: 0.75rem; }
 
 /* Subtle per-status column accents */
 .status-backlog { border-top: 3px solid rgba(15,23,42,0.15); }
