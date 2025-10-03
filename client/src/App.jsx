@@ -229,7 +229,7 @@ function ProjectBadge({ name }) {
   );
 }
 
-function LandingView({ onAccess, onCreate, busy, inviteProjectId, onClearInvite }) {
+function LandingView({ onAccess, onCreate, busyOpen = false, busyCreate = false, inviteProjectId, onClearInvite }) {
   const [accessSecret, setAccessSecret] = useState('');
   const [newProjectName, setNewProjectName] = useState('');
   const [newSecretKey, setNewSecretKey] = useState('');
@@ -297,12 +297,12 @@ function LandingView({ onAccess, onCreate, busy, inviteProjectId, onClearInvite 
             type="password"
             value={accessSecret}
             onChange={(event) => setAccessSecret(event.target.value)}
-            disabled={busy}
+            disabled={busyOpen}
             placeholder="e.g. sprint-rocket-2025"
           />
           {errors.access && <p className="form-error">{errors.access}</p>}
-          <button type="submit" className="primary" disabled={busy}>
-            {busy ? 'Loading…' : 'Open backlog'}
+          <button type="submit" className="primary" disabled={busyOpen}>
+            {busyOpen ? 'Loading…' : 'Open backlog'}
           </button>
         </form>
       </section>
@@ -320,7 +320,7 @@ function LandingView({ onAccess, onCreate, busy, inviteProjectId, onClearInvite 
             type="text"
             value={newProjectName}
             onChange={(event) => setNewProjectName(event.target.value)}
-            disabled={busy}
+            disabled={busyCreate}
             placeholder="e.g. Mars Rover"
           />
 
@@ -330,12 +330,12 @@ function LandingView({ onAccess, onCreate, busy, inviteProjectId, onClearInvite 
             type="password"
             value={newSecretKey}
             onChange={(event) => setNewSecretKey(event.target.value)}
-            disabled={busy}
+            disabled={busyCreate}
             placeholder="Provide a unique passphrase"
           />
           {errors.create && <p className="form-error">{errors.create}</p>}
-          <button type="submit" className="secondary" disabled={busy}>
-            {busy ? 'Saving…' : 'Create project'}
+          <button type="submit" className="secondary" disabled={busyCreate}>
+            {busyCreate ? 'Saving…' : 'Create project'}
           </button>
         </form>
       </section>
@@ -576,7 +576,9 @@ function App() {
   const [project, setProject] = useState(null);
   const [secretKey, setSecretKey] = useState('');
   const [columns, setColumns] = useState(createEmptyColumns);
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState(false); // board-level busy (drag, item ops)
+  const [busyOpen, setBusyOpen] = useState(false); // landing: open backlog
+  const [busyCreate, setBusyCreate] = useState(false); // landing: create project
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');
   const [inviteProjectId, setInviteProjectId] = useState(null);
@@ -670,7 +672,7 @@ function App() {
 
   const handleAccess = useCallback(
     async (secret, projectHint) => {
-      setBusy(true);
+  setBusyOpen(true);
       setError('');
       setInfo('');
       try {
@@ -686,7 +688,7 @@ function App() {
         setError(err.message);
         throw err;
       } finally {
-        setBusy(false);
+        setBusyOpen(false);
       }
     },
     [applyBoard, fetchBoard]
@@ -694,7 +696,7 @@ function App() {
 
   const handleCreateProject = useCallback(
     async ({ name, secretKey: secret }) => {
-      setBusy(true);
+  setBusyCreate(true);
       setError('');
       setInfo('');
       try {
@@ -707,7 +709,7 @@ function App() {
         setError(err.message);
         throw err;
       } finally {
-        setBusy(false);
+        setBusyCreate(false);
       }
     },
     [applyBoard]
@@ -966,7 +968,8 @@ function App() {
           <LandingView
             onAccess={handleAccess}
             onCreate={handleCreateProject}
-            busy={busy}
+            busyOpen={busyOpen}
+            busyCreate={busyCreate}
             inviteProjectId={inviteProjectId}
             onClearInvite={handleClearInvite}
           />
@@ -1075,8 +1078,11 @@ function App() {
           </section>
         )}
       </main>
-      <footer className="app-footer" role="contentinfo">
-        <span>Made at <strong>BIRL</strong></span>
+      <footer className="app-footer" role="contentinfo" aria-label="Site footer">
+        <span className="heart" aria-hidden="true">❤</span>
+        <span>
+          Made with love at <strong>BIRL</strong> in 2025
+        </span>
       </footer>
     </div>
   );

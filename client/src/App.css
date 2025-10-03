@@ -207,15 +207,16 @@ main {
 .app-footer {
   width: min(1120px, 92vw);
   margin: 0 auto clamp(1.2rem, 2.2vw, 2rem);
-  background: var(--panel);
+  background: linear-gradient(155deg, rgba(255,255,255,0.92), rgba(255,255,255,0.72));
   border: 1px solid var(--stroke);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
   padding: 0.75rem 1rem;
   color: var(--text-muted);
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 0.5rem;
 }
 
 [data-has-project="true"] .app-footer {
@@ -228,6 +229,8 @@ main {
 
 [data-density="compact"] .app-footer { padding: 0.55rem 0.85rem; }
 [data-mode="focus"] .app-footer { background: transparent; border-color: transparent; box-shadow: none; }
+
+.app-footer .heart { color: var(--danger); filter: saturate(1.1); }
 
 /* When a project is open, prioritize the board and expand to full screen space */
 [data-has-project="true"] main {
