@@ -237,10 +237,9 @@ main {
 }
 
 .message.info {
-  border-color: rgba(10, 132, 255, 0.35);
-  background: var(--panel-solid);
-  color: var(--text);
-  border-left: 4px solid var(--accent);
+  border-color: rgba(10, 132, 255, 0.2);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
 }
 
 .landing {
@@ -761,26 +760,12 @@ button.danger {
 [data-density="compact"] .drawer-form { padding: 0.7rem; }
 
 /* Modes */
-/* Dense: even tighter gutters and smaller chrome; keep legible body size */
-[data-mode="dense"] .columns { gap: 0.45rem; }
-[data-mode="dense"] .column { padding: 0.45rem; gap: 0.35rem; }
-[data-mode="dense"] .card { padding: 0.5rem; border-radius: 9px; }
-[data-mode="dense"] .board-metrics .metric { padding: 0.25rem 0.6rem; }
-[data-mode="dense"] .header-actions { gap: 0.5rem; }
-
 /* Focus: reduce non-essential chrome to emphasize content */
 [data-mode="focus"] .app-header { box-shadow: none; background: transparent; border: none; }
 [data-mode="focus"] .board { box-shadow: none; background: transparent; border: none; }
 [data-mode="focus"] .column { box-shadow: none; }
 [data-mode="focus"] .project-pill, [data-mode="focus"] .metric { background: transparent; border-color: transparent; }
 [data-mode="focus"] .card { box-shadow: 0 6px 14px rgba(15,23,42,0.08); }
-
-/* Presentation: larger typography and increased spacing for demos */
-[data-mode="presentation"] body { font-size: 16px; }
-[data-mode="presentation"] .board-headline h2 { font-size: 1.5rem; }
-[data-mode="presentation"] .columns { gap: 1.2rem; }
-[data-mode="presentation"] .card-header h4 { font-size: 1.1rem; }
-[data-mode="presentation"] .card { padding: 1rem; }
 
 .invite-hint code {
   font-family: "JetBrains Mono", "Fira Code", monospace;

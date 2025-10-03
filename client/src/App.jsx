@@ -567,7 +567,7 @@ function App() {
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');
   const [inviteProjectId, setInviteProjectId] = useState(null);
-  const MODES = ['compact', 'comfortable', 'dense', 'focus', 'presentation'];
+  const MODES = ['compact', 'focus'];
   const [mode, setMode] = useState(() => {
     if (typeof window === 'undefined') return 'compact';
     // migrate from legacy density pref if present
@@ -725,7 +725,6 @@ function App() {
         fetchBoard(parsed.projectId, parsed.secretKey)
           .then((board) => {
             applyBoard(board, parsed.secretKey, { persist: true });
-            setInfo(`Welcome back to “${board.project.name}”.`);
           })
           .catch((err) => {
             console.error(err);
@@ -915,6 +914,9 @@ function App() {
     <div className="app-shell">
       <header className="app-header">
         <div className="brand">
+          <span className="brand-mark" aria-hidden="true">
+            ⌁
+          </span>
           <div className="brand-copy">
             <h1>Backlog Pilot</h1>
             <p className="tagline">Focus on the work, not the workflow.</p>
