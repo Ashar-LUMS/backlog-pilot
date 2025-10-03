@@ -85,6 +85,119 @@ function ShareLink({ projectId, variant = 'secondary' }) {
   );
 }
 
+function TaskDrawer({
+  open,
+  item,
+  busy,
+  onClose,
+  onSave,
+  onDelete
+}) {
+  const [title, setTitle] = useState(item?.title || '');
+  const [description, setDescription] = useState(item?.description || '');
+  const [error, setError] = useState('');
+  const firstFieldRef = useRef(null);
+
+  useEffect(() => {
+    setTitle(item?.title || '');
+    setDescription(item?.description || '');
+    setError('');
+  }, [item?.id]);
+
+  useEffect(() => {
+    if (open) {
+      // Focus first field when opening
+      const id = requestAnimationFrame(() => firstFieldRef.current?.focus());
+      return () => cancelAnimationFrame(id);
+    }
+    return undefined;
+  }, [open]);
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Escape') {
+      e.stopPropagation();
+      onClose();
+    }
+  };
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    const t = title.trim();
+    if (!t) {
+      setError('Title cannot be empty.');
+      return;
+    }
+    try {
+      await onSave(item.id, { title: t, description: description.trim() });
+      onClose();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  if (!open || !item) return null;
+
+  return (
+    <div className="drawer-overlay" onClick={onClose} aria-hidden={!open}>
+      <aside
+        className="drawer"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="drawer-title"
+        onClick={(e) => e.stopPropagation()}
+        onKeyDown={handleKeyDown}
+      >
+        <header className="drawer-header">
+          <h3 id="drawer-title">Edit item</h3>
+          <button type="button" className="ghost" onClick={onClose} aria-label="Close">
+            ✕
+          </button>
+        </header>
+        <form className="form drawer-form" onSubmit={handleSave}>
+          <label htmlFor="drawer-title-input">Title</label>
+          <input
+            id="drawer-title-input"
+            ref={firstFieldRef}
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            disabled={busy}
+          />
+          <label htmlFor="drawer-desc-input">Description</label>
+          <textarea
+            id="drawer-desc-input"
+            rows="6"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            disabled={busy}
+          />
+          <div className="drawer-meta">
+            <span>Created {item?.createdAt ? new Date(item.createdAt).toLocaleString() : '—'}</span>
+          </div>
+          {error && <p className="form-error">{error}</p>}
+          <div className="form-actions">
+            <button type="submit" className="primary" disabled={busy}>
+              {busy ? 'Saving…' : 'Save changes'}
+            </button>
+            <button type="button" className="secondary" onClick={onClose} disabled={busy}>
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="danger"
+              onClick={() => onDelete(item.id)}
+              disabled={busy}
+              title="Delete item"
+            >
+              Delete
+            </button>
+          </div>
+        </form>
+      </aside>
+    </div>
+  );
+}
+
 function ProjectBadge({ name }) {
   const initials = useMemo(() => {
     const trimmed = (name || '').trim();
@@ -288,32 +401,8 @@ function AddCardForm({ status, onAdd, busy }) {
   );
 }
 
-function BoardCard({ item, busy, onUpdate, onDelete }) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [title, setTitle] = useState(item.title);
-  const [description, setDescription] = useState(item.description || '');
+function BoardCard({ item, busy, onOpen, onDelete }) {
   const [error, setError] = useState('');
-
-  useEffect(() => {
-    setTitle(item.title);
-    setDescription(item.description || '');
-    setError('');
-  }, [item.id, item.title, item.description]);
-
-  const handleSave = async (event) => {
-    event.preventDefault();
-    const trimmedTitle = title.trim();
-    if (!trimmedTitle) {
-      setError('Title cannot be empty.');
-      return;
-    }
-    try {
-      await onUpdate(item.id, { title: trimmedTitle, description: description.trim() });
-      setIsEditing(false);
-    } catch (err) {
-      setError(err.message);
-    }
-  };
 
   const handleDelete = async () => {
     if (busy) return;
@@ -324,34 +413,6 @@ function BoardCard({ item, busy, onUpdate, onDelete }) {
     }
   };
 
-  if (isEditing) {
-    return (
-      <form className="form card-form" onSubmit={handleSave}>
-        <input
-          type="text"
-          value={title}
-          onChange={(event) => setTitle(event.target.value)}
-          disabled={busy}
-        />
-        <textarea
-          rows="3"
-          value={description}
-          onChange={(event) => setDescription(event.target.value)}
-          disabled={busy}
-        />
-        {error && <p className="form-error">{error}</p>}
-        <div className="form-actions">
-          <button type="submit" className="primary" disabled={busy}>
-            {busy ? 'Saving…' : 'Save'}
-          </button>
-          <button type="button" className="ghost" onClick={() => setIsEditing(false)} disabled={busy}>
-            Cancel
-          </button>
-        </div>
-      </form>
-    );
-  }
-
   return (
     <div className="card-content">
       <div className="card-header">
@@ -360,7 +421,7 @@ function BoardCard({ item, busy, onUpdate, onDelete }) {
           <button
             type="button"
             className="card-icon-button"
-            onClick={() => setIsEditing(true)}
+            onClick={(e) => { e.stopPropagation(); onOpen(item); }}
             disabled={busy}
             aria-label="Edit backlog item"
             title="Edit backlog item"
@@ -370,7 +431,7 @@ function BoardCard({ item, busy, onUpdate, onDelete }) {
           <button
             type="button"
             className="card-icon-button danger"
-            onClick={handleDelete}
+            onClick={(e) => { e.stopPropagation(); handleDelete(); }}
             disabled={busy}
             aria-label="Delete backlog item"
             title="Delete backlog item"
@@ -396,6 +457,11 @@ function App() {
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');
   const [inviteProjectId, setInviteProjectId] = useState(null);
+  const [density, setDensity] = useState(() => {
+    if (typeof window === 'undefined') return 'comfortable';
+    return localStorage.getItem('ui-density') || 'comfortable';
+  });
+  const [drawerItem, setDrawerItem] = useState(null);
 
   const activeColumns = useMemo(() => ensureColumns(columns), [columns]);
 
@@ -679,6 +745,28 @@ function App() {
     [activeColumns, project, refreshBoard, secretKey]
   );
 
+  const toggleDensity = useCallback(() => {
+    setDensity((prev) => {
+      const next = prev === 'compact' ? 'comfortable' : 'compact';
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('ui-density', next);
+      }
+      return next;
+    });
+  }, []);
+
+  useEffect(() => {
+    // apply density to root container
+    const root = document.documentElement;
+    root.setAttribute('data-density', density);
+    return () => {
+      root.removeAttribute('data-density');
+    };
+  }, [density]);
+
+  const handleOpenDrawer = useCallback((item) => setDrawerItem(item), []);
+  const handleCloseDrawer = useCallback(() => setDrawerItem(null), []);
+
   return (
     <div className="app-shell">
       <header className="app-header">
@@ -744,6 +832,9 @@ function App() {
               </div>
               <div className="board-actions">
                 <ShareLink projectId={project.id} variant="ghost" />
+                <button type="button" className="secondary" onClick={toggleDensity} disabled={busy}>
+                  {density === 'compact' ? 'Density: Compact' : 'Density: Comfortable'}
+                </button>
                 <button type="button" className="primary" onClick={refreshBoard} disabled={busy}>
                   {busy ? 'Refreshing…' : 'Refresh board'}
                 </button>
@@ -773,11 +864,12 @@ function App() {
                                   ref={dragProvided.innerRef}
                                   {...dragProvided.draggableProps}
                                   {...dragProvided.dragHandleProps}
+                                  onClick={() => handleOpenDrawer(item)}
                                 >
                                   <BoardCard
                                     item={item}
                                     busy={busy}
-                                    onUpdate={handleUpdateItem}
+                                    onOpen={handleOpenDrawer}
                                     onDelete={handleDeleteItem}
                                   />
                                 </div>
@@ -793,6 +885,14 @@ function App() {
                 ))}
               </div>
             </DragDropContext>
+            <TaskDrawer
+              open={!!drawerItem}
+              item={drawerItem}
+              busy={busy}
+              onClose={handleCloseDrawer}
+              onSave={handleUpdateItem}
+              onDelete={handleDeleteItem}
+            />
           </section>
         )}
       </main>
