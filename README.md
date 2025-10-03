@@ -90,9 +90,13 @@ Both gates are green as of the latest commit.
    ```
 2. **Provision Heroku Postgres**
    ```powershell
-   heroku addons:create heroku-postgresql:hobby-dev
+   heroku addons:create heroku-postgresql:essential-0
    ```
-   The add-on injects `DATABASE_URL`, which the API now uses automatically. Heroku enforces SSL, so no extra configuration is required.
+   Heroku's catalog changes over time—run `heroku addons:plans heroku-postgresql` if you need to confirm the available tiers. If the add-on doesn't automatically expose `DATABASE_URL`, promote it:
+   ```powershell
+   heroku pg:promote HEROKU_POSTGRESQL_<COLOR>
+   ```
+   Replace `<COLOR>` with the color token from your database name (for example, `HEROKU_POSTGRESQL_PUCE`). Once promoted, the API picks up `DATABASE_URL` automatically and Heroku's managed SSL keeps the connection secure.
 3. **Deploy the code**
    - If you enabled GitHub auto-deploys, push to your main branch and let Heroku rebuild.
    - Otherwise, push directly:
