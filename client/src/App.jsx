@@ -567,9 +567,13 @@ function App() {
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');
   const [inviteProjectId, setInviteProjectId] = useState(null);
-  const [density, setDensity] = useState(() => {
+  const MODES = ['compact', 'comfortable', 'dense', 'focus', 'presentation'];
+  const [mode, setMode] = useState(() => {
     if (typeof window === 'undefined') return 'compact';
-    return localStorage.getItem('ui-density') || 'compact';
+    // migrate from legacy density pref if present
+    const legacyDensity = localStorage.getItem('ui-density');
+    const storedMode = localStorage.getItem('ui-mode');
+    return storedMode || legacyDensity || 'compact';
   });
   const [drawerItem, setDrawerItem] = useState(null);
   const [expandedId, setExpandedId] = useState(null);
@@ -863,24 +867,31 @@ function App() {
     [activeColumns, project, refreshBoard, secretKey]
   );
 
-  const toggleDensity = useCallback(() => {
-    setDensity((prev) => {
-      const next = prev === 'compact' ? 'comfortable' : 'compact';
+  const toggleMode = useCallback(() => {
+    setMode((prev) => {
+      const idx = MODES.indexOf(prev);
+      const next = MODES[(idx + 1) % MODES.length] || 'compact';
       if (typeof window !== 'undefined') {
-        localStorage.setItem('ui-density', next);
+        localStorage.setItem('ui-mode', next);
       }
       return next;
     });
   }, []);
 
   useEffect(() => {
-    // apply density to root container
+    // apply mode to root; keep compact density hook for backward CSS
     const root = document.documentElement;
-    root.setAttribute('data-density', density);
+    root.setAttribute('data-mode', mode);
+    if (mode === 'compact' || mode === 'dense') {
+      root.setAttribute('data-density', 'compact');
+    } else {
+      root.removeAttribute('data-density');
+    }
     return () => {
+      root.removeAttribute('data-mode');
       root.removeAttribute('data-density');
     };
-  }, [density]);
+  }, [mode]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -904,9 +915,6 @@ function App() {
     <div className="app-shell">
       <header className="app-header">
         <div className="brand">
-          <span className="brand-mark" aria-hidden="true">
-            ⌁
-          </span>
           <div className="brand-copy">
             <h1>Backlog Pilot</h1>
             <p className="tagline">Focus on the work, not the workflow.</p>
@@ -968,8 +976,8 @@ function App() {
                 <button type="button" className="primary" onClick={() => handleOpenCreateDrawer('backlog')} disabled={busy}>
                   Create
                 </button>
-                <button type="button" className="secondary" onClick={toggleDensity} disabled={busy}>
-                  {density === 'compact' ? 'Density: Compact' : 'Density: Comfortable'}
+                <button type="button" className="secondary" onClick={toggleMode} disabled={busy} title="Switch view mode">
+                  Mode: {mode.charAt(0).toUpperCase() + mode.slice(1)}
                 </button>
                 <button type="button" className="primary" onClick={refreshBoard} disabled={busy}>
                   {busy ? 'Refreshing…' : 'Refresh board'}
