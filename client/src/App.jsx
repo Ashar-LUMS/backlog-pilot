@@ -330,7 +330,7 @@ function LandingView({ onAccess, onCreate, busy, inviteProjectId, onClearInvite 
   );
 }
 
-function AddCardForm({ status, onAdd, busy }) {
+function AddCardForm({ status, onAdd, busy, buttonRef }) {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -367,6 +367,7 @@ function AddCardForm({ status, onAdd, busy }) {
         onClick={() => setOpen(true)}
         disabled={busy}
         title="Add a new item"
+        ref={buttonRef}
       >
         + Add item
       </button>
@@ -415,9 +416,12 @@ function BoardCard({ item, busy, onOpen, onDelete, expanded, onToggle }) {
   };
 
   return (
-    <div className="card-content" onClick={onToggle} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggle(); } }}>
+    <div className={`card-content ${expanded ? 'is-expanded' : ''}`} onClick={onToggle} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggle(); } }}>
       <div className="card-header">
-        <h4>{item.title}</h4>
+        <div className="card-title">
+          <span className={`chevron ${expanded ? 'open' : ''}`} aria-hidden="true">▸</span>
+          <h4>{item.title}</h4>
+        </div>
         <div className="card-icon-buttons">
           <button
             type="button"
@@ -465,7 +469,8 @@ function App() {
     return localStorage.getItem('ui-density') || 'comfortable';
   });
   const [drawerItem, setDrawerItem] = useState(null);
-  const [expandedIds, setExpandedIds] = useState(() => new Set());
+  const [expandedId, setExpandedId] = useState(null);
+  const addBtnRefs = useRef({});
 
   const activeColumns = useMemo(() => ensureColumns(columns), [columns]);
 
@@ -768,15 +773,40 @@ function App() {
     };
   }, [density]);
 
+  useEffect(() => {
+    const root = document.documentElement;
+    if (project) {
+      root.setAttribute('data-has-project', 'true');
+    } else {
+      root.removeAttribute('data-has-project');
+    }
+  }, [project]);
+
   const handleOpenDrawer = useCallback((item) => setDrawerItem(item), []);
   const handleCloseDrawer = useCallback(() => setDrawerItem(null), []);
   const toggleExpanded = useCallback((id) => {
-    setExpandedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+    setExpandedId((prev) => (prev === id ? null : id));
+  }, []);
+
+  const ensureAddRef = useCallback((status) => {
+    if (!addBtnRefs.current[status]) {
+      addBtnRefs.current[status] = { current: null };
+    }
+    return addBtnRefs.current[status];
+  }, []);
+
+  const handleColumnBackgroundClick = useCallback((status, e) => {
+    const target = e.target;
+    // Ignore clicks on cards, forms, buttons, headers
+    if (target.closest('.card') ||
+        target.closest('.card-form') ||
+        target.closest('.card-icon-button') ||
+        target.closest('header') ||
+        target.closest('.add-item-btn')) {
+      return;
+    }
+    const ref = addBtnRefs.current[status];
+    ref?.current?.click?.();
   }, []);
 
   return (
@@ -859,9 +889,10 @@ function App() {
                   <Droppable droppableId={status} key={status}>
                     {(provided, snapshot) => (
                       <div
-                        className={`column status-${status} ${snapshot.isDraggingOver ? 'drag-over' : ''}`}
+                        className={`column status-${status} ${activeColumns[status].length === 0 ? 'is-empty' : ''} ${snapshot.isDraggingOver ? 'drag-over' : ''}`}
                         ref={provided.innerRef}
                         {...provided.droppableProps}
+                        onClick={(e) => handleColumnBackgroundClick(status, e)}
                       >
                         <header>
                           <h3>{COLUMN_LABELS[status]}</h3>
@@ -882,7 +913,7 @@ function App() {
                                     busy={busy}
                                     onOpen={handleOpenDrawer}
                                     onDelete={handleDeleteItem}
-                                    expanded={expandedIds.has(item.id)}
+                                    expanded={expandedId === item.id}
                                     onToggle={() => toggleExpanded(item.id)}
                                   />
                                 </div>
@@ -891,7 +922,12 @@ function App() {
                           ))}
                           {provided.placeholder}
                         </div>
-                        <AddCardForm status={status} onAdd={handleAddItem} busy={busy} />
+                        <AddCardForm
+                          status={status}
+                          onAdd={handleAddItem}
+                          busy={busy}
+                          buttonRef={ensureAddRef(status)}
+                        />
                       </div>
                     )}
                   </Droppable>

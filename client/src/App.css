@@ -101,6 +101,12 @@ textarea {
   gap: clamp(1rem, 3vw, 1.6rem);
 }
 
+[data-has-project="true"] .app-header {
+  width: 100%;
+  margin: 0;
+  border-radius: 0;
+}
+
 .brand {
   display: flex;
   align-items: center;
@@ -195,6 +201,13 @@ main {
   display: flex;
   flex-direction: column;
   gap: clamp(1.2rem, 2.5vw, 1.8rem);
+}
+
+/* When a project is open, prioritize the board and expand to full screen space */
+[data-has-project="true"] main {
+  width: 100vw;
+  max-width: 100vw;
+  margin: 0;
 }
 
 .messages {
@@ -400,11 +413,30 @@ button.danger {
   gap: clamp(1rem, 2.2vw, 1.6rem);
 }
 
+[data-has-project="true"] .board {
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  width: 100%;
+  min-height: calc(100vh - 0px);
+}
+
 .board-toolbar {
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: clamp(1.2rem, 3vw, 2rem);
+}
+
+/* Keep toolbar actions in view while scrolling the board */
+[data-has-project="true"] .board-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--panel);
+  border-bottom: 1px solid var(--stroke);
+  padding-bottom: clamp(0.8rem, 2vw, 1rem);
+  margin-bottom: clamp(0.8rem, 2vw, 1rem);
 }
 
 .board-headline {
@@ -466,6 +498,11 @@ button.danger {
   gap: clamp(0.8rem, 2.2vw, 1.2rem);
 }
 
+[data-has-project="true"] .columns {
+  grid-template-columns: repeat(4, 1fr);
+  gap: clamp(0.8rem, 2vw, 1rem);
+}
+
 .column {
   background: var(--panel-solid);
   border-radius: var(--radius-md);
@@ -512,6 +549,7 @@ button.danger {
   flex-direction: column;
   gap: 0.6rem;
   min-height: 140px;
+  flex: 1;
 }
 
 .card {
@@ -544,6 +582,24 @@ button.danger {
   align-items: flex-start;
   justify-content: space-between;
   gap: 0.75rem;
+}
+
+.card-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.chevron {
+  display: inline-block;
+  transform: rotate(0deg);
+  transition: transform 180ms ease;
+  color: var(--text-soft);
+}
+
+.chevron.open {
+  transform: rotate(90deg);
+  color: var(--text-muted);
 }
 
 .card-header h4 {
@@ -603,8 +659,17 @@ button.danger {
   overflow-wrap: anywhere;
 }
 
+.card-content.is-expanded {
+  cursor: default;
+}
+
 .card-meta {
-  display: none; /* hide by default per requirements */
+  margin-top: 0.85rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.78rem;
+  color: var(--text-soft);
 }
 
 .card-form textarea {
@@ -725,6 +790,13 @@ button.danger {
 /* Allow add button to fill available width when there is space */
 .column .add-item-btn {
   align-self: stretch;
+  min-height: 44px;
+}
+
+/* Tastefully fill vertical space without overwhelming the column */
+.column.is-empty .add-item-btn {
+  margin-top: auto;
+  min-height: 180px;
 }
 
 /* Subtle per-status column accents */
