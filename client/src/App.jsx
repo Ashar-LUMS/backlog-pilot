@@ -992,11 +992,23 @@ function App() {
                               {(dragProvided, dragSnapshot) => (
                                 <div
                                   className={`card ${dragSnapshot.isDragging ? 'dragging' : ''}`}
-                                  ref={dragProvided.innerRef}
+                                  ref={(el) => {
+                                    dragProvided.innerRef(el);
+                                    if (el && !dragSnapshot.isDragging) {
+                                      // ensure element doesn't keep keyboard focus after drop
+                                      el.blur();
+                                    }
+                                  }}
                                   {...dragProvided.draggableProps}
                                   {...dragProvided.dragHandleProps}
                                   role="listitem"
                                   aria-label={item.title}
+                                  style={{
+                                    ...(dragProvided.draggableProps.style || {}),
+                                    transition: dragSnapshot.isDragging
+                                      ? 'transform 80ms ease-out'
+                                      : 'transform 120ms ease-out'
+                                  }}
                                 >
                                   <BoardCard
                                     item={item}

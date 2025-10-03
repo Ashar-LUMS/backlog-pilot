@@ -430,13 +430,12 @@ button.danger {
 
 /* Keep toolbar actions in view while scrolling the board */
 [data-has-project="true"] .board-toolbar {
-  position: sticky;
-  top: 0;
-  z-index: 5;
-  background: var(--panel-solid);
-  border-bottom: 1px solid var(--stroke);
-  padding-bottom: clamp(0.8rem, 2vw, 1rem);
-  margin-bottom: clamp(0.8rem, 2vw, 1rem);
+  /* sticky disabled for cleaner layout */
+  position: static;
+  background: var(--panel);
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: 0;
 }
 
 .board-headline {
@@ -520,13 +519,6 @@ button.danger {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  padding-bottom: 0.4rem;
-  margin-bottom: 0.2rem;
-  background: var(--panel-solid);
-  border-bottom: 1px solid var(--stroke);
 }
 
 .column header h3 {
@@ -556,7 +548,6 @@ button.danger {
   gap: 0.6rem;
   min-height: 140px;
   flex: 1;
-  overflow: auto;
 }
 
 .card {
@@ -565,7 +556,7 @@ button.danger {
   border: 1px solid rgba(15, 23, 42, 0.08);
   box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
   padding: 0.8rem;
-  transition: transform 120ms ease, box-shadow 140ms ease, border 120ms ease, background 120ms ease;
+  transition: transform 90ms ease, box-shadow 120ms ease, border 90ms ease, background 90ms ease;
   will-change: transform;
 }
 
@@ -579,8 +570,6 @@ button.danger {
 }
 
 .card.dragging {
-  transform: none !important;
-  transition: transform 60ms linear !important;
   box-shadow: 0 20px 40px rgba(10, 132, 255, 0.18);
   border-color: rgba(10, 132, 255, 0.28);
 }
@@ -810,15 +799,10 @@ button.danger {
 }
 
 /* Keep quick add visible at the top of the scrollable items */
+/* quick add sits naturally with the list; no sticky layering */
 .column-items > .quick-add-trigger,
 .column-items > .quick-add-form {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  background: var(--panel-solid);
-  padding-top: 0.25rem;
-  padding-bottom: 0.25rem;
-  border-bottom: 1px solid var(--stroke);
+  position: static;
 }
 
 .quick-add-form {
@@ -845,10 +829,7 @@ button.danger {
 .status-done { border-top: 3px solid rgba(16,185,129,0.45); }
 
 /* faint header tint per status for scannability */
-.status-backlog header,
-.status-in_progress header,
-.status-review header,
-.status-done header { background: var(--panel-solid); }
+/* remove extra header background overrides for a simpler look */
 
 @media (max-width: 900px) {
   .app-header {
