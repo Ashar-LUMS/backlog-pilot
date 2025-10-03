@@ -621,10 +621,14 @@ function App() {
     }
     setInviteProjectId(board.project.id);
     if (persist) {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({ projectId: board.project.id, secretKey: key })
-      );
+      if (typeof window !== 'undefined') {
+        try {
+          window.sessionStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify({ projectId: board.project.id, secretKey: key })
+          );
+        } catch (_) { /* ignore storage errors */ }
+      }
     }
   }, []);
 
@@ -641,7 +645,9 @@ function App() {
     setProject(null);
     setSecretKey('');
     setColumns(createEmptyColumns());
-    localStorage.removeItem(STORAGE_KEY);
+    if (typeof window !== 'undefined') {
+      try { window.sessionStorage.removeItem(STORAGE_KEY); } catch (_) {}
+    }
     handleClearInvite();
   }, [handleClearInvite]);
 
@@ -706,7 +712,7 @@ function App() {
   }, [applyBoard, fetchBoard, project, secretKey]);
 
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = typeof window !== 'undefined' ? window.sessionStorage.getItem(STORAGE_KEY) : null;
     if (!stored) return;
     try {
       const parsed = JSON.parse(stored);

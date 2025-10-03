@@ -587,6 +587,11 @@ button.danger {
   gap: 0.4rem;
 }
 
+@media (max-width: 720px) {
+  .card-title { gap: 0.6rem; }
+  .card-header h4 { font-size: 1.02rem; }
+}
+
 .chevron {
   display: inline-block;
   transform: rotate(0deg);
@@ -853,12 +858,25 @@ button.danger {
   .board-actions button {
     width: 100%;
   }
+
+  /* Larger tap targets for small tablets/large phones */
+  .card-icon-button { width: 40px; height: 40px; }
 }
 
 @media (max-width: 720px) {
+  /* Mobile: swipe between lanes with snap */
   .columns {
-    grid-template-columns: 1fr;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 90vw;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    gap: 0.8rem;
+    padding-bottom: 0.4rem;
   }
+
+  .column { scroll-snap-align: start; }
 
   .messages {
     left: 50%;
@@ -874,4 +892,18 @@ button.danger {
   .board {
     padding: 1.1rem;
   }
+
+  /* Comfortable reading on small screens even in compact density */
+  [data-density="compact"] body { font-size: 15px; }
+
+  /* Full-width drawer on phones */
+  .drawer { width: 100vw; }
+
+  /* Stack quick-add actions vertically for easier taps */
+  .quick-add-form { grid-template-columns: 1fr; }
+  .quick-add-actions { width: 100%; }
+  .quick-add-actions button { width: 100%; }
+
+  /* Ensure minimum hit size for buttons */
+  button { min-height: 44px; }
 }
