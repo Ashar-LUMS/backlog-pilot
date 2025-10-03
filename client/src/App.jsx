@@ -1078,12 +1078,7 @@ function App() {
           </section>
         )}
       </main>
-      <footer className="app-footer" role="contentinfo" aria-label="Site footer">
-        <span className="heart" aria-hidden="true">❤</span>
-        <span>
-          Made with love at <strong>BIRL</strong> in 2025
-        </span>
-      </footer>
+      {null}
     </div>
   );
 }
