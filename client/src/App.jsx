@@ -330,74 +330,17 @@ function LandingView({ onAccess, onCreate, busy, inviteProjectId, onClearInvite 
   );
 }
 
-function AddCardForm({ status, onAdd, busy }) {
-  const [open, setOpen] = useState(false);
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    if (!open) {
-      setTitle('');
-      setDescription('');
-      setError('');
-    }
-  }, [open]);
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    const trimmedTitle = title.trim();
-    if (!trimmedTitle) {
-      setError('Add a title to create the backlog item.');
-      return;
-    }
-    try {
-      await onAdd(status, { title: trimmedTitle, description: description.trim() });
-      setOpen(false);
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-
-  if (!open) {
-    return (
-      <button
-        type="button"
-        className="ghost"
-        onClick={() => setOpen(true)}
-        disabled={busy}
-      >
-        + Add item
-      </button>
-    );
-  }
-
+function AddCardForm({ status, onOpenCreate, busy }) {
   return (
-    <form className="form card-form" onSubmit={handleSubmit}>
-      <input
-        type="text"
-        value={title}
-        placeholder="Item title"
-        onChange={(event) => setTitle(event.target.value)}
-        disabled={busy}
-      />
-      <textarea
-        rows="3"
-        value={description}
-        placeholder="Optional description"
-        onChange={(event) => setDescription(event.target.value)}
-        disabled={busy}
-      />
-      {error && <p className="form-error">{error}</p>}
-      <div className="form-actions">
-        <button type="submit" className="primary" disabled={busy}>
-          {busy ? 'Adding…' : 'Add item'}
-        </button>
-        <button type="button" className="ghost" onClick={() => setOpen(false)} disabled={busy}>
-          Cancel
-        </button>
-      </div>
-    </form>
+    <button
+      type="button"
+      className="add-item-btn secondary"
+      onClick={() => onOpenCreate(status)}
+      disabled={busy}
+      title="Add a new item"
+    >
+      + Add item
+    </button>
   );
 }
 
@@ -440,11 +383,98 @@ function BoardCard({ item, busy, onOpen, onDelete }) {
           </button>
         </div>
       </div>
-      {item.description && <p>{item.description}</p>}
-      <div className="card-meta">
-        <span>{new Date(item.createdAt).toLocaleDateString()}</span>
-      </div>
+      {/* Description and date hidden by default for compact view */}
       {error && <p className="form-error">{error}</p>}
+    </div>
+  );
+}
+
+function CreateDrawer({ open, status, busy, onClose, onAdd }) {
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [error, setError] = useState('');
+  const firstFieldRef = useRef(null);
+
+  useEffect(() => {
+    if (open) {
+      setTitle('');
+      setDescription('');
+      setError('');
+      const id = requestAnimationFrame(() => firstFieldRef.current?.focus());
+      return () => cancelAnimationFrame(id);
+    }
+    return undefined;
+  }, [open]);
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Escape') {
+      e.stopPropagation();
+      onClose();
+    }
+  };
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    const t = title.trim();
+    if (!t) {
+      setError('Title cannot be empty.');
+      return;
+    }
+    try {
+      await onAdd(status, { title: t, description: description.trim() });
+      onClose();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  if (!open || !status) return null;
+
+  return (
+    <div className="drawer-overlay" onClick={onClose} aria-hidden={!open}>
+      <aside
+        className="drawer"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="create-drawer-title"
+        onClick={(e) => e.stopPropagation()}
+        onKeyDown={handleKeyDown}
+      >
+        <header className="drawer-header">
+          <h3 id="create-drawer-title">Add item</h3>
+          <button type="button" className="ghost" onClick={onClose} aria-label="Close">
+            ✕
+          </button>
+        </header>
+        <form className="form drawer-form" onSubmit={handleSave}>
+          <label htmlFor="create-title-input">Title</label>
+          <input
+            id="create-title-input"
+            ref={firstFieldRef}
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            disabled={busy}
+          />
+          <label htmlFor="create-desc-input">Description</label>
+          <textarea
+            id="create-desc-input"
+            rows="6"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            disabled={busy}
+          />
+          {error && <p className="form-error">{error}</p>}
+          <div className="form-actions">
+            <button type="submit" className="primary" disabled={busy}>
+              {busy ? 'Adding…' : 'Add item'}
+            </button>
+            <button type="button" className="secondary" onClick={onClose} disabled={busy}>
+              Cancel
+            </button>
+          </div>
+        </form>
+      </aside>
     </div>
   );
 }
@@ -462,6 +492,7 @@ function App() {
     return localStorage.getItem('ui-density') || 'comfortable';
   });
   const [drawerItem, setDrawerItem] = useState(null);
+  const [createStatus, setCreateStatus] = useState(null);
 
   const activeColumns = useMemo(() => ensureColumns(columns), [columns]);
 
@@ -766,6 +797,8 @@ function App() {
 
   const handleOpenDrawer = useCallback((item) => setDrawerItem(item), []);
   const handleCloseDrawer = useCallback(() => setDrawerItem(null), []);
+  const handleOpenCreateDrawer = useCallback((status) => setCreateStatus(status), []);
+  const handleCloseCreateDrawer = useCallback(() => setCreateStatus(null), []);
 
   return (
     <div className="app-shell">
@@ -847,7 +880,7 @@ function App() {
                   <Droppable droppableId={status} key={status}>
                     {(provided, snapshot) => (
                       <div
-                        className={`column ${snapshot.isDraggingOver ? 'drag-over' : ''}`}
+                        className={`column status-${status} ${snapshot.isDraggingOver ? 'drag-over' : ''}`}
                         ref={provided.innerRef}
                         {...provided.droppableProps}
                       >
@@ -878,7 +911,7 @@ function App() {
                           ))}
                           {provided.placeholder}
                         </div>
-                        <AddCardForm status={status} onAdd={handleAddItem} busy={busy} />
+                        <AddCardForm status={status} onOpenCreate={handleOpenCreateDrawer} busy={busy} />
                       </div>
                     )}
                   </Droppable>
@@ -892,6 +925,13 @@ function App() {
               onClose={handleCloseDrawer}
               onSave={handleUpdateItem}
               onDelete={handleDeleteItem}
+            />
+            <CreateDrawer
+              open={!!createStatus}
+              status={createStatus}
+              busy={busy}
+              onClose={handleCloseCreateDrawer}
+              onAdd={handleAddItem}
             />
           </section>
         )}
