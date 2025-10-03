@@ -54,6 +54,7 @@ body {
   text-rendering: optimizeLegibility;
   font-size: var(--font-size-base);
   line-height: var(--line-height-base);
+  overflow-x: hidden; /* prevent stray horizontal scrollbars */
 }
 
 a {
@@ -203,10 +204,35 @@ main {
   gap: clamp(1.2rem, 2.5vw, 1.8rem);
 }
 
+.app-footer {
+  width: min(1120px, 92vw);
+  margin: 0 auto clamp(1.2rem, 2.2vw, 2rem);
+  background: var(--panel);
+  border: 1px solid var(--stroke);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 0.75rem 1rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+[data-has-project="true"] .app-footer {
+  width: 100%;
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  margin: 0;
+}
+
+[data-density="compact"] .app-footer { padding: 0.55rem 0.85rem; }
+[data-mode="focus"] .app-footer { background: transparent; border-color: transparent; box-shadow: none; }
+
 /* When a project is open, prioritize the board and expand to full screen space */
 [data-has-project="true"] main {
-  width: 100vw;
-  max-width: 100vw;
+  width: 100%;
+  max-width: 100%;
   margin: 0;
 }
 
@@ -472,6 +498,10 @@ button.danger {
   white-space: nowrap;
 }
 
+@media (max-width: 900px) {
+  .metric { white-space: normal; }
+}
+
 .metric-label {
   font-size: 0.78rem;
   color: var(--text-soft);
@@ -489,6 +519,11 @@ button.danger {
   align-items: center;
   gap: 0.75rem;
   flex-wrap: wrap;
+}
+
+/* Make primary actions equal width for balance */
+.board-actions .primary {
+  min-width: 180px;
 }
 
 .columns {
@@ -866,6 +901,9 @@ button.danger {
   .board-actions button {
     width: 100%;
   }
+
+  /* Allow metrics to wrap on smaller screens */
+  .board-metrics { flex-wrap: wrap; }
 
   /* Larger tap targets for small tablets/large phones */
   .card-icon-button { width: 40px; height: 40px; }

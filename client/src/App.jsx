@@ -37,6 +37,19 @@ const columnsToIds = (columns) =>
     return acc;
   }, {});
 
+function createdDaysAgoLabel(createdAt) {
+  if (!createdAt) return '';
+  const created = new Date(createdAt);
+  if (Number.isNaN(created.getTime())) return '';
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfCreated = new Date(created.getFullYear(), created.getMonth(), created.getDate());
+  const days = Math.floor((startOfToday - startOfCreated) / 86400000);
+  if (days <= 0) return 'created today';
+  if (days === 1) return 'created one day ago';
+  return `created ${days} days ago`;
+}
+
 function ShareLink({ projectId, variant = 'secondary' }) {
   const [copied, setCopied] = useState(false);
   const resetTimer = useRef(null);
@@ -461,7 +474,7 @@ const BoardCard = memo(function BoardCard({ item, busy, onOpen, onDelete, expand
       {expanded && item.description && <p id={`details-${item.id}`}>{item.description}</p>}
       {expanded && (
         <div className="card-meta" id={`meta-${item.id}`}>
-          <span>{new Date(item.createdAt).toLocaleDateString()}</span>
+          <span>{createdDaysAgoLabel(item.createdAt)}</span>
         </div>
       )}
       {error && <p className="form-error">{error}</p>}
@@ -669,7 +682,6 @@ function App() {
           board = await fetchBoard(accessedProject.id, secret);
         }
         applyBoard(board, secret, { persist: true });
-        setInfo(`Loaded project “${board.project.name}”.`);
       } catch (err) {
         setError(err.message);
         throw err;
@@ -974,7 +986,6 @@ function App() {
                 </div>
               </div>
               <div className="board-actions">
-                <ShareLink projectId={project.id} variant="ghost" />
                 <button type="button" className="primary" onClick={() => handleOpenCreateDrawer('backlog')} disabled={busy}>
                   Create
                 </button>
@@ -1064,6 +1075,9 @@ function App() {
           </section>
         )}
       </main>
+      <footer className="app-footer" role="contentinfo">
+        <span>Made at <strong>BIRL</strong></span>
+      </footer>
     </div>
   );
 }
