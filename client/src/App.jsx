@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, memo } from 'react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { api } from './api';
 import { COLUMN_ORDER, COLUMN_LABELS } from './constants';
@@ -406,7 +406,7 @@ function AddCardForm({ status, onAdd, busy }) {
   );
 }
 
-function BoardCard({ item, busy, onOpen, onDelete, expanded, onToggle }) {
+const BoardCard = memo(function BoardCard({ item, busy, onOpen, onDelete, expanded, onToggle }) {
   const [error, setError] = useState('');
 
   const handleDelete = async () => {
@@ -419,11 +419,21 @@ function BoardCard({ item, busy, onOpen, onDelete, expanded, onToggle }) {
   };
 
   return (
-    <div className={`card-content ${expanded ? 'is-expanded' : ''}`} onClick={onToggle} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggle(); } }}>
+    <div
+      className={`card-content ${expanded ? 'is-expanded' : ''}`}
+      onClick={onToggle}
+      role="button"
+      tabIndex={0}
+      aria-expanded={expanded}
+      aria-controls={`details-${item.id}`}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggle(); }
+      }}
+    >
       <div className="card-header">
         <div className="card-title">
           <span className={`chevron ${expanded ? 'open' : ''}`} aria-hidden="true">▸</span>
-          <h4>{item.title}</h4>
+          <h4 title={item.title}>{item.title}</h4>
         </div>
         <div className="card-icon-buttons">
           <button
@@ -448,16 +458,16 @@ function BoardCard({ item, busy, onOpen, onDelete, expanded, onToggle }) {
           </button>
         </div>
       </div>
-      {expanded && item.description && <p>{item.description}</p>}
+      {expanded && item.description && <p id={`details-${item.id}`}>{item.description}</p>}
       {expanded && (
-        <div className="card-meta">
+        <div className="card-meta" id={`meta-${item.id}`}>
           <span>{new Date(item.createdAt).toLocaleDateString()}</span>
         </div>
       )}
       {error && <p className="form-error">{error}</p>}
     </div>
   );
-}
+});
 
 function CreateDrawer({ open, status, busy, onClose, onAdd }) {
   const [title, setTitle] = useState('');
@@ -558,8 +568,8 @@ function App() {
   const [info, setInfo] = useState('');
   const [inviteProjectId, setInviteProjectId] = useState(null);
   const [density, setDensity] = useState(() => {
-    if (typeof window === 'undefined') return 'comfortable';
-    return localStorage.getItem('ui-density') || 'comfortable';
+    if (typeof window === 'undefined') return 'compact';
+    return localStorage.getItem('ui-density') || 'compact';
   });
   const [drawerItem, setDrawerItem] = useState(null);
   const [expandedId, setExpandedId] = useState(null);
@@ -975,7 +985,7 @@ function App() {
                           <h3>{COLUMN_LABELS[status]}</h3>
                           <span className="count">{activeColumns[status].length}</span>
                         </header>
-                        <div className="column-items">
+                        <div className="column-items" role="list" aria-label={`${COLUMN_LABELS[status]} items`}>
                           <AddCardForm status={status} onAdd={handleAddItem} busy={busy} />
                           {activeColumns[status].map((item, index) => (
                             <Draggable draggableId={item.id} index={index} key={item.id}>
@@ -985,6 +995,8 @@ function App() {
                                   ref={dragProvided.innerRef}
                                   {...dragProvided.draggableProps}
                                   {...dragProvided.dragHandleProps}
+                                  role="listitem"
+                                  aria-label={item.title}
                                 >
                                   <BoardCard
                                     item={item}

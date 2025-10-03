@@ -513,13 +513,20 @@ button.danger {
   padding: 0.8rem;
   min-height: 300px;
   box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
-  transition: transform 180ms ease, border 180ms ease, background 180ms ease;
+  transition: border 180ms ease, background 180ms ease;
 }
 
 .column header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding-bottom: 0.4rem;
+  margin-bottom: 0.2rem;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.96), rgba(255,255,255,0.86));
+  backdrop-filter: blur(8px);
 }
 
 .column header h3 {
@@ -541,7 +548,6 @@ button.danger {
 .column.drag-over {
   border-color: rgba(10, 132, 255, 0.35);
   background: rgba(10, 132, 255, 0.08);
-  transform: translateY(-3px);
 }
 
 .column-items {
@@ -550,6 +556,7 @@ button.danger {
   gap: 0.6rem;
   min-height: 140px;
   flex: 1;
+  overflow: auto;
 }
 
 .card {
@@ -572,7 +579,8 @@ button.danger {
 }
 
 .card.dragging {
-  transform: scale(1.02);
+  transform: none !important;
+  transition: none !important;
   box-shadow: 0 28px 60px rgba(10, 132, 255, 0.25);
   border-color: rgba(10, 132, 255, 0.28);
 }
@@ -801,6 +809,18 @@ button.danger {
   color: var(--text);
 }
 
+/* Keep quick add visible at the top of the scrollable items */
+.column-items > .quick-add-trigger,
+.column-items > .quick-add-form {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.96), rgba(255,255,255,0.86));
+  backdrop-filter: blur(6px);
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+}
+
 .quick-add-form {
   display: grid;
   grid-template-columns: 1fr auto auto;
@@ -823,6 +843,12 @@ button.danger {
 .status-in_progress { border-top: 3px solid rgba(10,132,255,0.35); }
 .status-review { border-top: 3px solid rgba(245,158,11,0.45); }
 .status-done { border-top: 3px solid rgba(16,185,129,0.45); }
+
+/* faint header tint per status for scannability */
+.status-backlog header { background: linear-gradient(to bottom, rgba(15,23,42,0.04), rgba(255,255,255,0)); }
+.status-in_progress header { background: linear-gradient(to bottom, rgba(10,132,255,0.08), rgba(255,255,255,0)); }
+.status-review header { background: linear-gradient(to bottom, rgba(245,158,11,0.10), rgba(255,255,255,0)); }
+.status-done header { background: linear-gradient(to bottom, rgba(16,185,129,0.10), rgba(255,255,255,0)); }
 
 @media (max-width: 900px) {
   .app-header {
