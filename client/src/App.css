@@ -433,7 +433,7 @@ button.danger {
   position: sticky;
   top: 0;
   z-index: 5;
-  background: var(--panel);
+  background: var(--panel-solid);
   border-bottom: 1px solid var(--stroke);
   padding-bottom: clamp(0.8rem, 2vw, 1rem);
   margin-bottom: clamp(0.8rem, 2vw, 1rem);
@@ -525,8 +525,8 @@ button.danger {
   z-index: 2;
   padding-bottom: 0.4rem;
   margin-bottom: 0.2rem;
-  background: linear-gradient(to bottom, rgba(255,255,255,0.96), rgba(255,255,255,0.86));
-  backdrop-filter: blur(8px);
+  background: var(--panel-solid);
+  border-bottom: 1px solid var(--stroke);
 }
 
 .column header h3 {
@@ -547,7 +547,7 @@ button.danger {
 
 .column.drag-over {
   border-color: rgba(10, 132, 255, 0.35);
-  background: rgba(10, 132, 255, 0.08);
+  background: rgba(10, 132, 255, 0.05);
 }
 
 .column-items {
@@ -565,7 +565,7 @@ button.danger {
   border: 1px solid rgba(15, 23, 42, 0.08);
   box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
   padding: 0.8rem;
-  transition: transform 180ms ease, box-shadow 180ms ease, border 180ms ease, background 180ms ease;
+  transition: transform 120ms ease, box-shadow 140ms ease, border 120ms ease, background 120ms ease;
   will-change: transform;
 }
 
@@ -580,8 +580,8 @@ button.danger {
 
 .card.dragging {
   transform: none !important;
-  transition: none !important;
-  box-shadow: 0 28px 60px rgba(10, 132, 255, 0.25);
+  transition: transform 60ms linear !important;
+  box-shadow: 0 20px 40px rgba(10, 132, 255, 0.18);
   border-color: rgba(10, 132, 255, 0.28);
 }
 
@@ -815,10 +815,10 @@ button.danger {
   position: sticky;
   top: 0;
   z-index: 1;
-  background: linear-gradient(to bottom, rgba(255,255,255,0.96), rgba(255,255,255,0.86));
-  backdrop-filter: blur(6px);
+  background: var(--panel-solid);
   padding-top: 0.25rem;
   padding-bottom: 0.25rem;
+  border-bottom: 1px solid var(--stroke);
 }
 
 .quick-add-form {
@@ -845,10 +845,10 @@ button.danger {
 .status-done { border-top: 3px solid rgba(16,185,129,0.45); }
 
 /* faint header tint per status for scannability */
-.status-backlog header { background: linear-gradient(to bottom, rgba(15,23,42,0.04), rgba(255,255,255,0)); }
-.status-in_progress header { background: linear-gradient(to bottom, rgba(10,132,255,0.08), rgba(255,255,255,0)); }
-.status-review header { background: linear-gradient(to bottom, rgba(245,158,11,0.10), rgba(255,255,255,0)); }
-.status-done header { background: linear-gradient(to bottom, rgba(16,185,129,0.10), rgba(255,255,255,0)); }
+.status-backlog header,
+.status-in_progress header,
+.status-review header,
+.status-done header { background: var(--panel-solid); }
 
 @media (max-width: 900px) {
   .app-header {
